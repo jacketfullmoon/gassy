@@ -4,26 +4,23 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Map Test</title>
+  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css" />
   <style>
     body { margin: 0; background: #111; color: white; font-family: sans-serif; padding: 20px; }
     #status { font-size: 18px; margin-bottom: 10px; }
-    #map { width: 100%; height: 60vh; border: 2px solid lime; }
+    #map { width: 100%; height: 70vh; }
   </style>
 </head>
 <body>
-  <div id="status">Loading MapLibre...</div>
+  <div id="status">Loading...</div>
   <div id="map"></div>
 
+  <script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
   <script>
-    document.getElementById('status').textContent = 'Script tag reached';
-  </script>
-
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/maplibre-gl@3.6.2/dist/maplibre-gl.css" />
-  <script src="https://cdn.jsdelivr.net/npm/maplibre-gl@3.6.2/dist/maplibre-gl.js" onload="initMap()" onerror="document.getElementById('status').textContent = 'ERROR: MapLibre failed to load'"></script>
-
-  <script>
-    function initMap() {
-      document.getElementById('status').textContent = 'MapLibre loaded! Starting map...';
+    if (typeof maplibregl === 'undefined') {
+      document.getElementById('status').textContent = 'ERROR: MapLibre did not load. Check your internet connection.';
+    } else {
+      document.getElementById('status').textContent = 'MapLibre loaded! Building map...';
       try {
         var map = new maplibregl.Map({
           container: 'map',
@@ -33,7 +30,8 @@
               osm: {
                 type: 'raster',
                 tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
-                tileSize: 256
+                tileSize: 256,
+                attribution: 'OpenStreetMap contributors'
               }
             },
             layers: [{ id: 'osm', type: 'raster', source: 'osm' }]
@@ -42,10 +40,10 @@
           zoom: 12
         });
         map.on('load', function() {
-          document.getElementById('status').textContent = 'SUCCESS - Map loaded!';
+          document.getElementById('status').textContent = 'SUCCESS - Map is working!';
         });
         map.on('error', function(e) {
-          document.getElementById('status').textContent = 'Map error: ' + e.error.message;
+          document.getElementById('status').textContent = 'Map error: ' + JSON.stringify(e.error);
         });
       } catch(e) {
         document.getElementById('status').textContent = 'JS Error: ' + e.message;
