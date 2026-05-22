@@ -7,16 +7,16 @@
   <meta name="mobile-web-app-capable"                content="yes" />
   <meta name="apple-mobile-web-app-capable"          content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title"            content="GasFinder" />
+  <meta name="apple-mobile-web-app-title"            content="Gassy" />
   <meta name="theme-color"                           content="#080a10" />
-  <title>GasFinder</title>
+  <title>Gassy</title>
 
   <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css" />
   <script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"><\/script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"><\/script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800;900&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
 
   <style>
     :root {
@@ -26,7 +26,7 @@
       --rim:      rgba(255,255,255,0.06);
       --rim2:     rgba(255,255,255,0.10);
       --gold:     #f6c94e;
-      --gold-dim: rgba(246,201,78,0.18);
+      --gold-dim: rgba(246,201,78,0.15);
       --green:    #39e08a;
       --amber:    #f6c94e;
       --red:      #ff5f5f;
@@ -52,6 +52,209 @@
       touch-action: manipulation;
     }
 
+    /* ── SCREENS ── */
+    .screen {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column;
+      transition: opacity .45s ease, transform .45s ease, visibility .45s ease;
+    }
+    .screen.hidden {
+      opacity: 0; visibility: hidden; pointer-events: none;
+      transform: translateY(30px);
+    }
+
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       WELCOME SCREEN
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    #screen-welcome {
+      background: var(--ink);
+      align-items: center;
+      justify-content: space-between;
+      padding: calc(var(--sat) + 60px) 32px calc(var(--sab) + 48px);
+      z-index: 10;
+    }
+
+    /* top section */
+    .wlc-top {
+      display: flex; flex-direction: column;
+      align-items: center; gap: 0; width: 100%;
+    }
+
+    /* ambient glow */
+    .wlc-glow {
+      position: absolute; top: 10%; left: 50%;
+      transform: translateX(-50%);
+      width: 320px; height: 320px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(246,201,78,.11) 0%, transparent 65%);
+      pointer-events: none;
+    }
+
+    .wlc-emoji {
+      font-size: 64px; margin-bottom: 24px;
+      animation: float 3s ease-in-out infinite;
+      position: relative;
+    }
+    @keyframes float {
+      0%,100% { transform: translateY(0); }
+      50%      { transform: translateY(-10px); }
+    }
+
+    .wlc-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 52px; font-weight: 900;
+      letter-spacing: -2.5px; line-height: 1;
+      color: var(--txt); text-align: center;
+      margin-bottom: 6px;
+    }
+    .wlc-title span { color: var(--gold); }
+
+    .wlc-sub {
+      font-size: 16px; color: var(--txt2);
+      text-align: center; line-height: 1.55;
+      max-width: 260px; margin-top: 14px;
+    }
+
+    /* price ticker badge */
+    .wlc-badge {
+      display: flex; align-items: center; gap: 8px;
+      margin-top: 28px;
+      padding: 10px 18px;
+      background: var(--gold-dim);
+      border: 1px solid rgba(246,201,78,.25);
+      border-radius: 50px;
+      font-size: 13px; font-weight: 600; color: var(--gold);
+    }
+    .wlc-badge .dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--gold);
+      animation: pulse-dot 1.5s ease-in-out infinite;
+    }
+    @keyframes pulse-dot {
+      0%,100% { opacity: 1; transform: scale(1); }
+      50%      { opacity: .4; transform: scale(.7); }
+    }
+
+    /* action buttons */
+    .wlc-btns {
+      display: flex; flex-direction: column;
+      gap: 14px; width: 100%;
+    }
+
+    .wlc-btn {
+      width: 100%; padding: 0 22px;
+      height: 64px;
+      border-radius: 20px;
+      border: none; cursor: pointer;
+      display: flex; align-items: center; gap: 16px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 16px; font-weight: 600;
+      transition: transform .13s, box-shadow .13s;
+      text-align: left;
+    }
+    .wlc-btn:active { transform: scale(.97); box-shadow: none !important; }
+
+    .wlc-btn-icon {
+      width: 40px; height: 40px; flex-shrink: 0;
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px;
+    }
+
+    .wlc-btn-text { flex: 1; }
+    .wlc-btn-text .btn-title { display: block; font-size: 16px; font-weight: 700; }
+    .wlc-btn-text .btn-sub   { display: block; font-size: 12px; opacity: .7; margin-top: 1px; }
+    .wlc-btn-arrow { font-size: 18px; opacity: .5; }
+
+    /* Button variants */
+    .btn-primary {
+      background: var(--gold);
+      color: var(--ink);
+      box-shadow: 0 6px 28px rgba(246,201,78,.35);
+    }
+    .btn-primary .wlc-btn-icon { background: rgba(0,0,0,.15); }
+
+    .btn-secondary {
+      background: var(--ink2);
+      color: var(--txt);
+      border: 1px solid var(--rim2);
+      box-shadow: 0 4px 20px rgba(0,0,0,.3);
+    }
+    .btn-secondary .wlc-btn-icon { background: var(--ink3); }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--txt2);
+      border: 1px solid var(--rim);
+    }
+    .btn-ghost .wlc-btn-icon { background: var(--ink3); }
+
+    /* bottom link */
+    .wlc-footer {
+      font-size: 12px; color: var(--txt2);
+      text-align: center; margin-top: 4px;
+    }
+
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       CROSS STREETS SEARCH SCREEN
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    #screen-search {
+      background: var(--ink);
+      padding: calc(var(--sat) + 20px) 24px calc(var(--sab) + 24px);
+      z-index: 10;
+    }
+
+    .search-header {
+      display: flex; align-items: center; gap: 14px;
+      margin-bottom: 28px;
+    }
+    .back-btn {
+      width: 40px; height: 40px; border-radius: 12px;
+      background: var(--ink2); border: 1px solid var(--rim2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; cursor: pointer; flex-shrink: 0;
+    }
+    .back-btn:active { background: var(--ink3); }
+    .search-header h2 {
+      font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800;
+      letter-spacing: -.5px;
+    }
+
+    .search-label {
+      font-size: 12px; font-weight: 600; letter-spacing: .08em;
+      text-transform: uppercase; color: var(--txt2); margin-bottom: 8px;
+    }
+    .search-input {
+      width: 100%; padding: 15px 18px;
+      background: var(--ink2); border: 1px solid var(--rim2);
+      border-radius: var(--r-md); color: var(--txt);
+      font-family: 'DM Sans', sans-serif; font-size: 16px;
+      outline: none; margin-bottom: 16px;
+      transition: border-color .15s;
+    }
+    .search-input:focus { border-color: var(--gold); }
+    .search-input::placeholder { color: var(--txt2); }
+
+    .search-go {
+      width: 100%; padding: 17px;
+      background: var(--gold); color: var(--ink);
+      font-family: 'DM Sans', sans-serif; font-size: 16px; font-weight: 700;
+      border: none; border-radius: 50px; cursor: pointer;
+      box-shadow: 0 6px 24px rgba(246,201,78,.3);
+      transition: transform .12s;
+    }
+    .search-go:active { transform: scale(.96); }
+
+    .search-hint {
+      margin-top: 20px; font-size: 13px; color: var(--txt2);
+      line-height: 1.6; text-align: center;
+    }
+    .search-hint strong { color: var(--txt); }
+
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       MAP SCREEN
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    #screen-map { z-index: 5; }
+
     #map { position: absolute; inset: 0; width: 100%; height: 100%; }
 
     .maplibregl-ctrl-attrib { display: none !important; }
@@ -66,103 +269,49 @@
       box-shadow: 0 4px 22px rgba(0,0,0,.5) !important;
     }
     .maplibregl-ctrl-group button {
-      background: transparent !important;
-      width: 46px !important; height: 46px !important;
+      background: transparent !important; width: 46px !important; height: 46px !important;
     }
     .maplibregl-ctrl-group button .maplibregl-ctrl-icon { filter: invert(1) brightness(0.5); }
     .maplibregl-ctrl-group button:active .maplibregl-ctrl-icon { filter: invert(1) brightness(1); }
     .maplibregl-ctrl-group button + button { border-top: 1px solid var(--rim) !important; }
 
-    /* SPLASH */
-    #splash {
-      position: absolute; inset: 0; z-index: 200;
-      background: var(--ink);
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      padding: 48px 36px;
-      transition: opacity .5s ease, visibility .5s ease;
+    /* back to home button on map */
+    #map-back {
+      position: absolute; top: calc(var(--sat) + 14px); left: 14px;
+      z-index: 30; width: 42px; height: 42px; border-radius: 12px;
+      background: rgba(16,19,28,.92); backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid var(--rim2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; cursor: pointer;
+      box-shadow: 0 4px 18px rgba(0,0,0,.5);
+      transition: transform .13s;
     }
-    #splash.gone { opacity: 0; visibility: hidden; pointer-events: none; }
-    .splash-glow {
-      position: absolute; width: 280px; height: 280px; border-radius: 50%;
-      background: radial-gradient(circle, rgba(246,201,78,.12) 0%, transparent 68%);
-      pointer-events: none;
-    }
-    .splash-icon {
-      position: relative; width: 92px; height: 92px;
-      background: var(--gold-dim); border: 1px solid rgba(246,201,78,.28);
-      border-radius: 28px; display: flex; align-items: center; justify-content: center;
-      font-size: 46px; margin-bottom: 28px;
-      animation: breathe 2.4s ease-in-out infinite;
-    }
-    @keyframes breathe {
-      0%,100% { box-shadow: 0 0 0 0    rgba(246,201,78,.25); }
-      50%      { box-shadow: 0 0 0 18px rgba(246,201,78,0); }
-    }
-    .splash-title {
-      font-family: 'Syne', sans-serif; font-size: 38px; font-weight: 800;
-      letter-spacing: -1.5px; color: var(--txt); text-align: center; margin-bottom: 14px;
-    }
-    .splash-title em { color: var(--gold); font-style: normal; }
-    .splash-sub {
-      font-size: 15px; color: var(--txt2); text-align: center;
-      line-height: 1.65; max-width: 270px; margin-bottom: 36px;
-    }
-    #splash-cta {
-      width: 100%; max-width: 300px; padding: 17px 0;
-      background: var(--gold); color: var(--ink);
-      font-family: 'DM Sans', sans-serif; font-size: 16px; font-weight: 700;
-      border: none; border-radius: 50px; cursor: pointer;
-      box-shadow: 0 6px 28px rgba(246,201,78,.35);
-      transition: transform .12s, box-shadow .12s;
-    }
-    #splash-cta:active { transform: scale(.95); box-shadow: none; }
-    #splash-skip {
-      margin-top: 14px; background: none; border: none;
-      font-family: 'DM Sans', sans-serif; font-size: 13px;
-      color: var(--txt2); cursor: pointer;
-    }
-    .splash-spin {
-      width: 26px; height: 26px; border: 3px solid var(--ink3);
-      border-top-color: var(--gold); border-radius: 50%;
-      animation: spin .7s linear infinite; margin-top: 4px; display: none;
-    }
-    .splash-spin.on { display: block; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    #splash-msg { margin-top: 12px; font-size: 13px; color: var(--txt2); text-align: center; min-height: 16px; }
+    #map-back:active { transform: scale(.88); }
 
-    /* TOPBAR */
-    #topbar {
-      position: absolute; top: 0; left: 0; right: 0; z-index: 30;
-      pointer-events: none;
-      padding: calc(var(--sat) + 14px) 14px 14px;
-      display: flex; align-items: center; justify-content: space-between;
-    }
-    .wordmark {
-      font-family: 'Syne', sans-serif; font-size: 19px; font-weight: 800;
-      letter-spacing: -.6px; color: var(--txt); pointer-events: auto;
-      text-shadow: 0 2px 14px rgba(0,0,0,.75);
-    }
-    .wordmark span { color: var(--gold); }
-    #gps-pill {
-      display: flex; align-items: center; gap: 7px; padding: 7px 13px;
+    /* map title pill */
+    #map-title {
+      position: absolute; top: calc(var(--sat) + 14px); left: 68px; right: 14px;
+      z-index: 30;
+      display: flex; align-items: center; gap: 7px;
+      padding: 7px 13px; height: 42px;
       background: rgba(8,10,16,.8); backdrop-filter: blur(18px);
       -webkit-backdrop-filter: blur(18px);
-      border: 1px solid var(--rim2); border-radius: 50px;
-      font-size: 12px; font-weight: 500; color: var(--txt2);
-      pointer-events: auto; cursor: pointer;
-      max-width: 160px; overflow: hidden;
+      border: 1px solid var(--rim2); border-radius: 12px;
+      font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 800;
+      letter-spacing: -.3px;
+      overflow: hidden;
     }
-    #gps-pill span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .gdot {
+    #map-title span { color: var(--gold); }
+    #map-title .gdot {
       width: 8px; height: 8px; border-radius: 50%;
       background: var(--txt2); flex-shrink: 0; transition: background .3s;
+      margin-left: auto;
     }
-    .gdot.live    { background: var(--green); box-shadow: 0 0 7px var(--green); }
-    .gdot.seeking { animation: blink 1.1s ease-in-out infinite; }
+    #map-title .gdot.live    { background: var(--green); box-shadow: 0 0 7px var(--green); }
+    #map-title .gdot.seeking { animation: blink 1.1s ease-in-out infinite; }
     @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.15} }
 
-    /* FABS */
     .fab {
       position: absolute; z-index: 30; width: 50px; height: 50px; border-radius: 50%;
       background: rgba(16,19,28,.92); backdrop-filter: blur(14px);
@@ -177,7 +326,6 @@
     #btn-locate { right: 16px; bottom: 308px; }
     #btn-fuel   { right: 16px; bottom: 240px; }
 
-    /* BOTTOM SHEET */
     #sheet {
       position: absolute; left: 0; right: 0; bottom: 0; z-index: 20;
       background: var(--ink2);
@@ -250,7 +398,6 @@
     .s-price { font-family: 'Syne', sans-serif; font-size: 21px; font-weight: 800; letter-spacing: -.6px; flex-shrink: 0; }
     .empty-state { padding: 36px 24px; text-align: center; font-size: 14px; color: var(--txt2); line-height: 1.7; }
 
-    /* POPUP */
     .maplibregl-popup-content {
       background: var(--ink2) !important; border: 1px solid var(--rim2) !important;
       border-radius: var(--r-md) !important; padding: 15px 17px !important;
@@ -295,53 +442,175 @@
       transition: opacity .22s, transform .22s;
     }
     #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* GPS permission overlay (shown on map screen if needed) */
+    #gps-overlay {
+      position: absolute; inset: 0; z-index: 25;
+      background: rgba(8,10,16,.92);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 40px; gap: 16px;
+      transition: opacity .3s, visibility .3s;
+    }
+    #gps-overlay.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+    #gps-overlay h3 {
+      font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800;
+      text-align: center;
+    }
+    #gps-overlay p { font-size: 14px; color: var(--txt2); text-align: center; line-height: 1.6; max-width: 260px; }
+    .gps-allow-btn {
+      padding: 15px 40px; background: var(--gold); color: var(--ink);
+      font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 700;
+      border: none; border-radius: 50px; cursor: pointer;
+      box-shadow: 0 6px 24px rgba(246,201,78,.3);
+    }
+    .gps-skip-btn {
+      background: none; border: none; color: var(--txt2);
+      font-family: 'DM Sans', sans-serif; font-size: 13px; cursor: pointer;
+    }
+    .gps-spin {
+      width: 24px; height: 24px; border: 3px solid var(--ink3);
+      border-top-color: var(--gold); border-radius: 50%;
+      animation: spin .7s linear infinite; display: none;
+    }
+    .gps-spin.on { display: block; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    #gps-msg { font-size: 13px; color: var(--txt2); min-height: 16px; }
   </style>
 </head>
 <body>
 
-<div id="splash">
-  <div class="splash-glow"></div>
-  <div class="splash-icon">&#x26FD;</div>
-  <div class="splash-title">Gas<em>Finder</em></div>
-  <p class="splash-sub">Find the cheapest gas near you in Los Angeles.</p>
-  <button id="splash-cta" onclick="requestGPS()">Enable My Location</button>
-  <button id="splash-skip" onclick="skipToLA()">Skip &mdash; show Los Angeles</button>
-  <div class="splash-spin" id="s-spin"></div>
-  <div id="splash-msg"></div>
+<!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+     SCREEN 1: WELCOME
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+<div class="screen" id="screen-welcome">
+  <div class="wlc-glow"></div>
+
+  <div class="wlc-top">
+    <div class="wlc-emoji">&#x26FD;</div>
+    <div class="wlc-title">Welcome to<br><span>Gassy</span></div>
+    <p class="wlc-sub">Your go-to app for finding the cheapest gas in Los Angeles.</p>
+    <div class="wlc-badge">
+      <div class="dot"></div>
+      Live prices updated daily
+    </div>
+  </div>
+
+  <div class="wlc-btns">
+
+    <!-- Button 1: Find Gas Station (GPS) -->
+    <button class="wlc-btn btn-primary" onclick="goFindGas()">
+      <div class="wlc-btn-icon">&#x1F4CD;</div>
+      <div class="wlc-btn-text">
+        <span class="btn-title">Find Gas Station</span>
+        <span class="btn-sub">Near my current location</span>
+      </div>
+      <div class="wlc-btn-arrow">&#x203A;</div>
+    </button>
+
+    <!-- Button 2: Search Cross Streets -->
+    <button class="wlc-btn btn-secondary" onclick="goSearch()">
+      <div class="wlc-btn-icon">&#x1F50D;</div>
+      <div class="wlc-btn-text">
+        <span class="btn-title">Search Cross Streets</span>
+        <span class="btn-sub">Enter an intersection</span>
+      </div>
+      <div class="wlc-btn-arrow">&#x203A;</div>
+    </button>
+
+    <!-- Button 3: Cheapest Gas Now -->
+    <button class="wlc-btn btn-secondary" onclick="goCheapest()">
+      <div class="wlc-btn-icon">&#x1F4B0;</div>
+      <div class="wlc-btn-text">
+        <span class="btn-title">Cheapest Gas Now</span>
+        <span class="btn-sub">Best prices across all of LA</span>
+      </div>
+      <div class="wlc-btn-arrow">&#x203A;</div>
+    </button>
+
+  </div>
+
+  <div class="wlc-footer">Los Angeles &amp; surrounding cities</div>
 </div>
 
-<div id="map"></div>
+<!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+     SCREEN 2: CROSS STREETS SEARCH
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+<div class="screen hidden" id="screen-search">
+  <div class="search-header">
+    <div class="back-btn" onclick="goHome()">&#x2190;</div>
+    <h2>Search by Location</h2>
+  </div>
 
-<div id="topbar">
-  <div class="wordmark">&#x26FD;&nbsp;Gas<span>Finder</span></div>
-  <div id="gps-pill" onclick="recenter()">
+  <div class="search-label">Street or Intersection</div>
+  <input class="search-input" id="search-input"
+    type="text" placeholder="e.g. Sunset &amp; Vine, Hollywood"
+    autocomplete="off" autocorrect="off" autocapitalize="off" />
+
+  <div class="search-label">City</div>
+  <input class="search-input" id="search-city"
+    type="text" placeholder="e.g. Los Angeles, Santa Monica"
+    autocomplete="off" />
+
+  <button class="search-go" onclick="doSearch()">Search for Gas Stations</button>
+
+  <p class="search-hint">
+    Try <strong>Sunset &amp; Highland</strong> or <strong>Lincoln &amp; Pico</strong><br>
+    to find stations near any intersection.
+  </p>
+</div>
+
+<!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+     SCREEN 3: MAP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+<div class="screen hidden" id="screen-map">
+
+  <div id="map"></div>
+
+  <!-- GPS permission overlay (shown inside map screen) -->
+  <div id="gps-overlay">
+    <div style="font-size:48px">&#x1F4CD;</div>
+    <h3>Allow Location Access</h3>
+    <p>Gassy needs your location to show gas stations near you.</p>
+    <button class="gps-allow-btn" onclick="requestGPS()">Allow Location</button>
+    <button class="gps-skip-btn" onclick="skipToLA()">Skip &mdash; use Los Angeles</button>
+    <div class="gps-spin" id="gps-spin"></div>
+    <div id="gps-msg"></div>
+  </div>
+
+  <!-- Top bar -->
+  <div id="map-back" onclick="goHome()">&#x2190;</div>
+  <div id="map-title">
+    &#x26FD;&nbsp;<span id="map-title-text">Gassy</span>
     <div class="gdot seeking" id="gps-dot"></div>
-    <span id="gps-txt">Locating&hellip;</span>
   </div>
-</div>
 
-<button class="fab" id="btn-locate" onclick="recenter()">&#x1F4CD;</button>
-<button class="fab" id="btn-fuel"   onclick="cycleFuel()">&#x26A1;</button>
-<div id="toast"></div>
+  <!-- FABs -->
+  <button class="fab" id="btn-locate" onclick="recenter()">&#x1F4CD;</button>
+  <button class="fab" id="btn-fuel"   onclick="cycleFuel()">&#x26A1;</button>
 
-<div id="sheet" class="s0">
-  <div class="handle-bar" id="handle"></div>
-  <div id="fuel-row">
-    <button class="ftab on"  data-fuel="regular"  onclick="setFuel(this)">Regular</button>
-    <button class="ftab"     data-fuel="midgrade" onclick="setFuel(this)">Mid</button>
-    <button class="ftab"     data-fuel="premium"  onclick="setFuel(this)">Premium</button>
-    <button class="ftab"     data-fuel="diesel"   onclick="setFuel(this)">Diesel</button>
+  <!-- Bottom sheet -->
+  <div id="sheet" class="s0">
+    <div class="handle-bar" id="handle"></div>
+    <div id="fuel-row">
+      <button class="ftab on"  data-fuel="regular"  onclick="setFuel(this)">Regular</button>
+      <button class="ftab"     data-fuel="midgrade" onclick="setFuel(this)">Mid</button>
+      <button class="ftab"     data-fuel="premium"  onclick="setFuel(this)">Premium</button>
+      <button class="ftab"     data-fuel="diesel"   onclick="setFuel(this)">Diesel</button>
+    </div>
+    <div id="stats-bar">
+      <div class="stat-cell"><div class="sc-label">Low</div><div class="sc-val cv-lo" id="sv-lo">&mdash;</div></div>
+      <div class="stat-cell"><div class="sc-label">Avg</div><div class="sc-val cv-av" id="sv-av">&mdash;</div></div>
+      <div class="stat-cell"><div class="sc-label">High</div><div class="sc-val cv-hi" id="sv-hi">&mdash;</div></div>
+      <div class="stat-cell"><div class="sc-label">Near</div><div class="sc-val cv-n"  id="sv-ct">0</div></div>
+    </div>
+    <div id="list-scroll">
+      <div class="empty-state" id="list-empty">Loading stations&hellip;</div>
+      <div id="list-inner"></div>
+    </div>
   </div>
-  <div id="stats-bar">
-    <div class="stat-cell"><div class="sc-label">Low</div><div class="sc-val cv-lo" id="sv-lo">&mdash;</div></div>
-    <div class="stat-cell"><div class="sc-label">Avg</div><div class="sc-val cv-av" id="sv-av">&mdash;</div></div>
-    <div class="stat-cell"><div class="sc-label">High</div><div class="sc-val cv-hi" id="sv-hi">&mdash;</div></div>
-    <div class="stat-cell"><div class="sc-label">Near</div><div class="sc-val cv-n"  id="sv-ct">0</div></div>
-  </div>
-  <div id="list-scroll">
-    <div class="empty-state" id="list-empty">Waiting for GPS&hellip;</div>
-    <div id="list-inner"></div>
-  </div>
+
+  <div id="toast"></div>
 </div>
 
 <script>
@@ -352,27 +621,116 @@ var SB_URL = 'https://YOUR_PROJECT.supabase.co';
 var SB_KEY = 'YOUR_ANON_KEY';
 // var sb = window.supabase.createClient(SB_URL, SB_KEY);
 
-var map, userMarker, openPopup;
-var userLat = 34.0522, userLng = -118.2437;
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// STATE
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+var map = null;
+var mapReady = false;
+var userMarker, openPopup;
+var userLat = 34.0522, userLng = -118.2437; // default: downtown LA
 var fuel = 'regular';
 var pins = [];
 var snapState = 's0';
 var SNAPS = ['s0','s1','s2'];
 var FUELS = ['regular','midgrade','premium','diesel'];
+var mapMode = 'nearby'; // 'nearby' | 'cheapest' | 'search'
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// SCREEN NAVIGATION
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(function(s) {
+    s.classList.add('hidden');
+  });
+  document.getElementById(id).classList.remove('hidden');
+}
+
+function goHome() { showScreen('screen-welcome'); }
+
+// Button 1: Find Gas Station — goes to map, asks for GPS
+function goFindGas() {
+  mapMode = 'nearby';
+  document.getElementById('map-title-text').textContent = 'Near Me';
+  showScreen('screen-map');
+  initMapOnce(function() {
+    requestGPS();
+  });
+}
+
+// Button 2: Search Cross Streets
+function goSearch() {
+  showScreen('screen-search');
+}
+
+// Button 3: Cheapest Gas Now — goes to map, shows all sorted by price
+function goCheapest() {
+  mapMode = 'cheapest';
+  document.getElementById('map-title-text').textContent = 'Cheapest Gas';
+  showScreen('screen-map');
+  initMapOnce(function() {
+    hideGPSOverlay();
+    // Sort by cheapest across all LA (no GPS needed)
+    map.flyTo({ center: [userLng, userLat], zoom: 11, duration: 800 });
+    loadStations();
+    toast('Showing cheapest gas across LA');
+  });
+}
+
+// Called from search screen
+function doSearch() {
+  var street = document.getElementById('search-input').value.trim();
+  var city   = document.getElementById('search-city').value.trim() || 'Los Angeles';
+  if (!street) {
+    document.getElementById('search-input').focus(); return;
+  }
+  var query = encodeURIComponent(street + ', ' + city + ', CA');
+  var url   = 'https://nominatim.openstreetmap.org/search?q=' + query + '&format=json&limit=1';
+
+  mapMode = 'search';
+  document.getElementById('map-title-text').textContent = street;
+  showScreen('screen-map');
+
+  initMapOnce(function() {
+    hideGPSOverlay();
+    fetch(url)
+      .then(function(r){ return r.json(); })
+      .then(function(data) {
+        if (data && data.length > 0) {
+          var lat = parseFloat(data[0].lat);
+          var lng = parseFloat(data[0].lon);
+          userLat = lat; userLng = lng;
+          map.flyTo({ center: [lng, lat], zoom: 14, duration: 900 });
+          loadStations();
+          toast('Showing gas near ' + street);
+        } else {
+          toast('Location not found. Try a different address.');
+        }
+      })
+      .catch(function() {
+        toast('Search failed. Check your connection.');
+      });
+  });
+}
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // GPS
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 function requestGPS() {
-  var cta  = document.getElementById('splash-cta');
-  var skip = document.getElementById('splash-skip');
-  var spin = document.getElementById('s-spin');
-  var msg  = document.getElementById('splash-msg');
-  cta.style.display = skip.style.display = 'none';
+  var spin = document.getElementById('gps-spin');
+  var msg  = document.getElementById('gps-msg');
+  var overlay = document.getElementById('gps-overlay');
+
+  // Show the overlay asking for permission
+  overlay.classList.remove('hidden');
+
+  // Hide buttons, show spinner
+  overlay.querySelector('.gps-allow-btn').style.display = 'none';
+  overlay.querySelector('.gps-skip-btn').style.display  = 'none';
   spin.classList.add('on');
   msg.textContent = 'Requesting location...';
+
   if (!navigator.geolocation) {
-    msg.textContent = 'GPS not available - using Los Angeles.';
+    msg.textContent = 'GPS not available.';
     spin.classList.remove('on');
     skipToLA(); return;
   }
@@ -383,44 +741,57 @@ function requestGPS() {
 function onGrant(pos) {
   userLat = pos.coords.latitude;
   userLng = pos.coords.longitude;
-  setPill('live', fmt(userLat, userLng));
-  hideSplash();
-  bootMap(userLng, userLat);
+  setGPSDot('live');
+  hideGPSOverlay();
+  if (userMarker) userMarker.setLngLat([userLng, userLat]);
+  map.flyTo({ center: [userLng, userLat], zoom: 13, duration: 800 });
+  loadStations();
   navigator.geolocation.watchPosition(function(p) {
     userLat = p.coords.latitude; userLng = p.coords.longitude;
     if (userMarker) userMarker.setLngLat([userLng, userLat]);
-    setPill('live', fmt(userLat, userLng));
   }, null, { enableHighAccuracy: true, maximumAge: 8000 });
 }
 
 function onDeny() {
-  document.getElementById('s-spin').classList.remove('on');
-  document.getElementById('splash-msg').textContent = 'Permission denied.';
-  var cta = document.getElementById('splash-cta');
-  cta.textContent = 'Try Again';
-  cta.style.display = document.getElementById('splash-skip').style.display = '';
+  document.getElementById('gps-spin').classList.remove('on');
+  document.getElementById('gps-msg').textContent = 'Permission denied.';
+  var overlay = document.getElementById('gps-overlay');
+  overlay.querySelector('.gps-allow-btn').textContent = 'Try Again';
+  overlay.querySelector('.gps-allow-btn').style.display = '';
+  overlay.querySelector('.gps-skip-btn').style.display  = '';
 }
 
 function skipToLA() {
-  setPill('', 'Los Angeles'); hideSplash(); bootMap(userLng, userLat);
+  setGPSDot('');
+  hideGPSOverlay();
+  map.flyTo({ center: [userLng, userLat], zoom: 12, duration: 800 });
+  loadStations();
+  toast('Showing Los Angeles area');
 }
-function hideSplash() { document.getElementById('splash').classList.add('gone'); }
-function setPill(cls, label) {
+
+function hideGPSOverlay() {
+  document.getElementById('gps-overlay').classList.add('hidden');
+}
+function setGPSDot(cls) {
   document.getElementById('gps-dot').className = 'gdot ' + cls;
-  document.getElementById('gps-txt').textContent = label;
 }
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// MAP — Stadia Maps dark style (free, beautiful, shows street names)
+// MAP INIT (only created once)
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-function bootMap(lng, lat) {
+function initMapOnce(callback) {
+  if (mapReady) { callback(); return; }
+  if (map) {
+    // Map exists but may still be loading
+    map.once('load', function() { mapReady = true; callback(); });
+    return;
+  }
+
   map = new maplibregl.Map({
     container: 'map',
     style: 'https://tiles.stadiamaps.com/styles/alidade_smooth_dark.json',
-    center: [lng, lat],
-    zoom: 13,
-    minZoom: 9,
-    maxZoom: 19,
+    center: [userLng, userLat],
+    zoom: 12, minZoom: 9, maxZoom: 19,
     padding: { top: 80, bottom: 300, left: 16, right: 16 }
   });
 
@@ -429,9 +800,13 @@ function bootMap(lng, lat) {
   var dotEl = document.createElement('div');
   dotEl.className = 'u-dot';
   userMarker = new maplibregl.Marker({ element: dotEl, anchor: 'center' })
-    .setLngLat([lng, lat]).addTo(map);
+    .setLngLat([userLng, userLat]).addTo(map);
 
-  map.on('load', function() { loadStations(); });
+  map.on('load', function() {
+    mapReady = true;
+    callback();
+  });
+
   map.on('click', function() {
     if (openPopup) { openPopup.remove(); openPopup = null; }
     snap('s0');
@@ -451,7 +826,7 @@ function recenter() {
 //          regular_price, midgrade_price, premium_price,
 //          diesel_price, updated_at
 //
-// TODO: delete mock block + uncomment Supabase query below
+// TODO: delete mock block + uncomment Supabase query
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 function loadStations() {
   clearPins();
@@ -472,7 +847,14 @@ function loadStations() {
   // return;
   // -------------------------------------------
 
-  renderStations(mockData(fuel));
+  var stations = mockData(fuel);
+
+  // If cheapest mode, sort by price instead of distance
+  if (mapMode === 'cheapest') {
+    stations.sort(function(a,b){ return a.price - b.price; });
+  }
+
+  renderStations(stations);
 }
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -483,7 +865,7 @@ function renderStations(stations) {
   if (!stations.length) { empty.style.display = 'block'; return; }
   empty.style.display = 'none';
 
-  var prices = stations.map(function(s) { return s.price; });
+  var prices = stations.map(function(s){ return s.price; });
   var lo = Math.min.apply(null, prices);
   var hi = Math.max.apply(null, prices);
   var av = prices.reduce(function(a,b){return a+b;},0) / prices.length;
@@ -495,8 +877,15 @@ function renderStations(stations) {
   document.getElementById('sv-ct').textContent = stations.length;
 
   var sorted = stations.map(function(s) {
-    return Object.assign({}, s, { km: hav(userLat,userLng,s.latitude,s.longitude) });
-  }).sort(function(a,b){ return a.km - b.km; });
+    return Object.assign({}, s, { km: hav(userLat, userLng, s.latitude, s.longitude) });
+  });
+
+  // Sort by distance for nearby/search, by price for cheapest
+  if (mapMode === 'cheapest') {
+    sorted.sort(function(a,b){ return a.price - b.price; });
+  } else {
+    sorted.sort(function(a,b){ return a.km - b.km; });
+  }
 
   var inner = document.getElementById('list-inner');
   inner.innerHTML = '';
@@ -505,7 +894,7 @@ function renderStations(stations) {
     var r     = (s.price - lo) / rng;
     var col   = rCol(r);
     var chip  = rChip(r);
-    var chipC = r<.33 ? 'chip-lo' : r<.66 ? 'chip-md' : 'chip-hi';
+    var chipC = r < .33 ? 'chip-lo' : r < .66 ? 'chip-md' : 'chip-hi';
 
     var el = document.createElement('div');
     el.style.cssText = 'position:relative;width:46px;height:46px;background:'+col+';border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:2px solid rgba(0,0,0,.2);cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.45)';
@@ -513,18 +902,12 @@ function renderStations(stations) {
     lbl.textContent = '$'+s.price.toFixed(2);
     lbl.style.cssText = "position:absolute;inset:0;display:flex;align-items:center;justify-content:center;transform:rotate(45deg);font-family:'DM Sans',sans-serif;font-size:9.5px;font-weight:700;color:rgba(0,0,0,.85)";
     el.appendChild(lbl);
-    (function(station,c,ch,chC){
-      el.addEventListener('click', function(e) {
-        e.stopPropagation(); showPopup(station,c,ch,chC); snap('s0');
-      });
+    (function(st,c,ch,chC){
+      el.addEventListener('click', function(e){ e.stopPropagation(); showPopup(st,c,ch,chC); snap('s0'); });
     })(s, col, chip, chipC);
+    pins.push(new maplibregl.Marker({ element: el, anchor: 'bottom' }).setLngLat([s.longitude, s.latitude]).addTo(map));
 
-    pins.push(
-      new maplibregl.Marker({ element: el, anchor: 'bottom' })
-        .setLngLat([s.longitude, s.latitude]).addTo(map)
-    );
-
-    var row  = document.createElement('div');
+    var row = document.createElement('div');
     row.className = 's-row';
     var dist = s.km < 1 ? Math.round(s.km*1000)+'m' : s.km.toFixed(1)+'km';
     row.innerHTML =
@@ -535,10 +918,10 @@ function renderStations(stations) {
         '<div class="s-dist">'+dist+' away</div>' +
       '</div>' +
       '<div class="s-price" style="color:'+col+'">$'+s.price.toFixed(2)+'</div>';
-    (function(station,c,ch,chC){
-      row.addEventListener('click', function() {
-        map.flyTo({ center:[station.longitude,station.latitude], zoom:15, duration:700 });
-        showPopup(station,c,ch,chC); snap('s0');
+    (function(st,c,ch,chC){
+      row.addEventListener('click', function(){
+        map.flyTo({ center:[st.longitude,st.latitude], zoom:15, duration:700 });
+        showPopup(st,c,ch,chC); snap('s0');
       });
     })(s, col, chip, chipC);
     inner.appendChild(row);
@@ -565,7 +948,7 @@ function setFuel(btn) {
   document.querySelectorAll('.ftab').forEach(function(b){ b.classList.remove('on'); });
   btn.classList.add('on');
   fuel = btn.dataset.fuel;
-  if (map) loadStations();
+  if (mapReady) loadStations();
 }
 function cycleFuel() {
   var next = FUELS[(FUELS.indexOf(fuel)+1) % FUELS.length];
@@ -574,12 +957,12 @@ function cycleFuel() {
 }
 
 function snap(s) { document.getElementById('sheet').className = s; snapState = s; }
-document.getElementById('handle').addEventListener('click', function() {
+document.getElementById('handle').addEventListener('click', function(){
   snap(SNAPS[(SNAPS.indexOf(snapState)+1) % SNAPS.length]);
 });
 var ty = 0;
 document.getElementById('sheet').addEventListener('touchstart', function(e){ ty = e.touches[0].clientY; }, {passive:true});
-document.getElementById('sheet').addEventListener('touchend', function(e) {
+document.getElementById('sheet').addEventListener('touchend', function(e){
   var dy = ty - e.changedTouches[0].clientY;
   if (Math.abs(dy) < 20) return;
   var i = SNAPS.indexOf(snapState);
@@ -595,7 +978,6 @@ function hav(la1,lo1,la2,lo2) {
   var a=Math.sin(dL/2)*Math.sin(dL/2)+Math.cos(la1*Math.PI/180)*Math.cos(la2*Math.PI/180)*Math.sin(dG/2)*Math.sin(dG/2);
   return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
 }
-function fmt(la,lo) { return la.toFixed(3)+'°, '+lo.toFixed(3)+'°'; }
 function sIcon(n) {
   n = n.toLowerCase();
   if (n.indexOf('costco')  >=0) return '🟦';
